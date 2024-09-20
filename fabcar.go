@@ -59,7 +59,7 @@ func (s *SmartContract) InitLedger(ctx contractapi.TransactionContextInterface) 
 }
 
 // CreateCar adds a new car to the world state with given details
-func (s *SmartContract) CreateCar(ctx contractapi.TransactionContextInterface, carNumber string, make string, model string, colour string, owner string) error {
+func (s *SmartContract) CreateCar(ctx contractapi.TransactionContextInterface, carID string, make string, model string, colour string, owner string) error {
 	car := Car{
 		Make:   make,
 		Model:  model,
@@ -69,19 +69,19 @@ func (s *SmartContract) CreateCar(ctx contractapi.TransactionContextInterface, c
 
 	carAsBytes, _ := json.Marshal(car)
 
-	return ctx.GetStub().PutState(carNumber, carAsBytes)
+	return ctx.GetStub().PutState(carID, carAsBytes)
 }
 
-// QueryCar returns the car stored in the world state with given id
-func (s *SmartContract) QueryCar(ctx contractapi.TransactionContextInterface, carNumber string) (*Car, error) {
-	carAsBytes, err := ctx.GetStub().GetState(carNumber)
+// GetCar returns the car stored in the world state with given id
+func (s *SmartContract) GetCar(ctx contractapi.TransactionContextInterface, carID string) (*Car, error) {
+	carAsBytes, err := ctx.GetStub().GetState(carID)
 
 	if err != nil {
 		return nil, fmt.Errorf("Failed to read from world state. %s", err.Error())
 	}
 
 	if carAsBytes == nil {
-		return nil, fmt.Errorf("%s does not exist", carNumber)
+		return nil, fmt.Errorf("%s does not exist", carID)
 	}
 
 	car := new(Car)
@@ -90,8 +90,8 @@ func (s *SmartContract) QueryCar(ctx contractapi.TransactionContextInterface, ca
 	return car, nil
 }
 
-// QueryAllCars returns all cars found in world state
-func (s *SmartContract) QueryAllCars(ctx contractapi.TransactionContextInterface) ([]QueryResult, error) {
+// GetAllCars returns all cars found in world state
+func (s *SmartContract) GetAllCars(ctx contractapi.TransactionContextInterface) ([]QueryResult, error) {
 	startKey := ""
 	endKey := ""
 
@@ -122,8 +122,8 @@ func (s *SmartContract) QueryAllCars(ctx contractapi.TransactionContextInterface
 }
 
 // ChangeCarOwner updates the owner field of car with given id in world state
-func (s *SmartContract) ChangeCarOwner(ctx contractapi.TransactionContextInterface, carNumber string, newOwner string) error {
-	car, err := s.QueryCar(ctx, carNumber)
+func (s *SmartContract) ChangeCarOwner(ctx contractapi.TransactionContextInterface, carID string, newOwner string) error {
+	car, err := s.GetCar(ctx, carID)
 
 	if err != nil {
 		return err
@@ -133,7 +133,7 @@ func (s *SmartContract) ChangeCarOwner(ctx contractapi.TransactionContextInterfa
 
 	carAsBytes, _ := json.Marshal(car)
 
-	return ctx.GetStub().PutState(carNumber, carAsBytes)
+	return ctx.GetStub().PutState(carID, carAsBytes)
 }
 
 func main() {
